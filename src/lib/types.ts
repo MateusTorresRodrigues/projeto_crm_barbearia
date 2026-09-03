@@ -161,14 +161,3 @@ export type LogSistema = {
 
 /** Log com o usuário responsável já unido — usado na tela de Logs. */
 export type LogSistemaDetalhado = LogSistema & { usuario: Usuario | null }
-
-/** Token de API (aba "API" de Configurações) — autentica o agente de IA na Edge Function `agente`. */
-export type ApiToken = {
-  id: string
-  nome: string
-  token: string
-  ativo: boolean
-  ultimo_uso_em: string | null
-  created_at: string
-  updated_at: string
-}

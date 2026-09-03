@@ -41,7 +41,7 @@ Usadas pelo cliente Supabase em [src/lib/supabase.ts](src/lib/supabase.ts).
 ```
 src/
   components/
-    ui/            componentes shadcn/ui (button, input, dialog, dropdown-menu, avatar, card, label, separator, tabs)
+    ui/            componentes shadcn/ui (button, input, dialog, dropdown-menu, avatar, card, label, separator)
     layout/        AppLayout, Sidebar, Header
     profissionais/ ProfissionalCard, ProfissionalFormDialog, EscalaEditor
     agenda/        GradeSemana, GradeMes, BlocoAgendamento, FiltroProfissionais, ClienteCombobox, AgendamentoFormDialog, AgendamentoDetalhesDialog
@@ -70,7 +70,6 @@ src/
     useClientesInativos.ts clientes tipo=cliente cuja última visita passou de `configuracoes.dias_inatividade`
     useUsuarios.ts         usuários da equipe (tabela `usuarios`), para o filtro por usuário da tela de Logs
     useLogsSistema.ts      `logs_sistema` paginado (mais recentes primeiro) com usuário unido e filtros por tabela/usuário/período
-    useApiTokens.ts        CRUD de `api_tokens` (gerar/ativar/desativar/excluir) para a aba "API" de Configurações
   lib/
     supabase.ts    cliente Supabase
     navegacao.ts   itens do menu lateral (título, rota, ícone)
@@ -101,14 +100,14 @@ Login público; todas as demais rotas são protegidas por autenticação (`Prote
 | `/profissionais` | Profissionais — cadastro, escala de disponibilidade e ativação |
 | `/clientes` | Clientes — listagem, busca, filtro por barbeiro e histórico de atendimentos |
 | `/leads` | Leads / Kanban-CRM — colunas por status, arrastar para mover, atualização em tempo real |
-| `/comandas` | Comanda — abertura, lançamento de serviços e fechamento de atendimentos |
 | `/servicos` | Serviços — catálogo (nome, duração, preço) e ativação |
-| `/comissao` | Comissão — valor a receber por profissional, por período |
 | `/retorno` | Retorno — clientes inativos, com ação rápida para abrir o WhatsApp |
 | `/configuracoes` | Configurações |
 | `/logs` | Logs |
 
 Profissionais, Agenda, Serviços, Clientes, Comanda, Comissão, Leads/Kanban-CRM, Retorno, Dashboard, Configurações e Logs já estão implementadas (ver "Histórico de etapas construídas"). A navegação, o layout e a autenticação já estão prontos para todas as rotas.
+
+> **Comanda e Comissão temporariamente desativadas** (a pedido do usuário, Etapa 12): as rotas `/comandas` e `/comissao`, os itens correspondentes no menu ([src/lib/navegacao.ts](src/lib/navegacao.ts)) e os cards do Dashboard que linkavam para elas foram removidos. O código das páginas (`src/pages/Comandas.tsx`, `src/pages/Comissao.tsx`), os componentes (`src/components/comandas/`) e os hooks (`useComandas`, `useComandaDetalhada`, `useComissao`) **não foram apagados** — continuam no repositório, só não estão referenciados em `App.tsx`. As tabelas `comandas`/`comanda_servicos` e os triggers de cálculo de valor/comissão continuam ativos no banco. Para reativar: reinserir as duas linhas em `ITENS_MENU` e as duas `<Route>` em `App.tsx`, e devolver os três cards de faturamento/comissão ao Dashboard.
 
 ### Agenda — detalhes de implementação
 
@@ -134,8 +133,7 @@ Profissionais, Agenda, Serviços, Clientes, Comanda, Comissão, Leads/Kanban-CRM
 ### Dashboard — detalhes de implementação
 
 - Página só de leitura, sem estado próprio salvo no banco: compõe hooks já existentes (`useAgendamentos`, `useComissao`, `useLeadsRealtime`, `useClientesInativos`) em vez de criar uma nova fonte de dados — os cartões de indicador reagem às mesmas regras de negócio já validadas nas telas de origem.
-- Cartões no topo: agendamentos de hoje (com quantos já compareceram), faturamento de hoje e do mês (soma de `valor_total` das comandas fechadas no período, via `useComissao`) e comissão do mês a pagar (`totalGeral` de `useComissao`); cada cartão linka para a página correspondente (Agenda, Comanda, Comissão).
-- Um segundo par de cartões mostra leads novos (`status = novo`) e em andamento, e a quantidade de clientes para retorno (`useClientesInativos`, mesmo critério de `dias_inatividade` usado na página Retorno) — ambos linkam para Leads e Retorno.
+- Cartões no topo: agendamentos de hoje (com quantos já compareceram, linka para Agenda), leads novos (`status = novo`, com quantos em andamento, linka para Leads) e clientes para retorno (`useClientesInativos`, mesmo critério de `dias_inatividade` usado na página Retorno, linka para Retorno). Os cards de faturamento/comissão (`useComissao`) foram removidos junto com a Etapa 12 (ver nota em "Estrutura de páginas e rotas") — a página ainda não usa `useComissao`.
 - Abaixo, a lista "Agenda de hoje" repete os agendamentos do dia (cor do profissional, cliente, serviço, badge de status), sem paginação — é um resumo, não substitui a grade da página Agenda.
 
 ### Leads / Kanban-CRM e Retorno — detalhes de implementação
@@ -148,13 +146,27 @@ Profissionais, Agenda, Serviços, Clientes, Comanda, Comissão, Leads/Kanban-CRM
 ### Configurações e Logs — detalhes de implementação
 
 - `configuracoes` ganhou as colunas `horario_abertura` e `horario_fechamento` (tipo `time`, padrão 09:00–19:00) para o horário de funcionamento exibido no formulário — as demais colunas já existiam desde a Etapa 1.
-- A página tem duas abas (`src/components/ui/tabs.tsx`, criado nessa etapa com `@radix-ui/react-tabs`): "Geral" (o formulário) e "API" (gestão de tokens — ver Etapa 9).
+- A página tem só a seção "Geral" (o formulário de identidade/preferências). A aba "API" de gestão de tokens (criada na Etapa 9) foi removida a pedido do usuário para evitar que um funcionário da barbearia mexa sem querer nos tokens do agente de IA — a gestão de `api_tokens` passou a ser feita direto no Supabase (SQL Editor), documentada em "Integração do agente de IA" abaixo. `src/components/ui/tabs.tsx` e a dependência `@radix-ui/react-tabs` foram removidos por ficarem sem uso.
 - O upload de logo acontece assim que um arquivo é escolhido (sem esperar o botão "Salvar"): valida tipo (PNG/JPEG/WEBP/SVG) e tamanho (até 2MB) no front-end, envia para o bucket `logos` com um nome de arquivo único, atualiza `configuracoes.logo_url` e remove o arquivo antigo do Storage; "Remover logo" pede confirmação (`useConfirm`) antes de limpar o campo. Os demais campos (nome do negócio, horário, dias de inatividade) são salvos juntos por um único botão "Salvar alterações". Toda alteração é refletida na sidebar/header/login pelo Realtime já existente no `ConfiguracaoContext`.
 - Logs (`useLogsSistema`) lista `logs_sistema` com o usuário já unido, mais recentes primeiro, paginado 50 em 50 ("Carregar mais"); filtros por tabela, usuário (`useUsuarios`) e período são aplicados na própria query. Cada linha expande para mostrar `dados_anteriores`/`dados_novos` como pares campo/valor traduzidos (não como JSON bruto). Quando não há `id_usuario` vinculado, a tela exibe "Agente de IA" se a tabela afetada for uma das que aceitam escrita via `service_role` (`crm_barbearia`, `agendamentos`) ou "Sistema" caso contrário — desde a Etapa 9 isso acontece de verdade: a Edge Function do agente grava logs com `id_usuario: null`.
 
 ### Integração do agente de IA (n8n/Evolution API) — detalhes de implementação
 
 - O n8n nunca recebe a `service_role key` do Supabase diretamente. Em vez disso, existe uma Edge Function única, **`agente`** ([supabase/functions/agente/index.ts](supabase/functions/agente/index.ts)), implantada com `verify_jwt = false` porque implementa autenticação própria: o n8n manda `Authorization: Bearer <token>`, e a função valida esse token contra a tabela `api_tokens` (usando a `service_role key`, disponível automaticamente dentro da Edge Function) antes de executar qualquer ação. A cada chamada válida, `api_tokens.ultimo_uso_em` é atualizado.
+- **Gestão de tokens:** não existe mais tela no site para isso (removida a pedido do usuário — ver "Configurações" acima). Tokens são criados/consultados/revogados direto no Supabase, pelo SQL Editor:
+  ```sql
+  -- criar
+  insert into api_tokens (nome, token, ativo)
+  values ('n8n produção', 'bhk_' || encode(extensions.gen_random_bytes(32), 'hex'), true)
+  returning token;
+
+  -- consultar
+  select nome, ativo, ultimo_uso_em, created_at from api_tokens order by created_at desc;
+
+  -- desativar / excluir
+  update api_tokens set ativo = false where nome = 'n8n produção';
+  delete from api_tokens where nome = 'n8n produção';
+  ```
 - Requisição: `POST { action: string, payload?: object }`. Resposta: `{ ok: true, data }` ou `{ ok: false, erro: string }` com o status HTTP correspondente. Ações disponíveis:
   - `buscar_lead { whatsapp }` — retorna o registro de `crm_barbearia` ou `null`.
   - `upsert_lead { whatsapp, nome?, status?, origem?, observacoes?, barbeiro_preferido?, frequencia_visita?, motivo_contato?, resumo_conversa?, ultima_mensagem?, follow_up_1?, follow_up_2? }` — cria o lead (`tipo: "lead"`, `status: "novo"`) se o whatsapp não existir, ou atualiza só os campos enviados; valida `status` contra os valores de `StatusCrm`.
@@ -162,7 +174,7 @@ Profissionais, Agenda, Serviços, Clientes, Comanda, Comissão, Leads/Kanban-CRM
   - `disponibilidade { id_profissional, data, duracao_minutos? }` — cruza a escala do profissional naquele dia da semana com os agendamentos já existentes e devolve os horários livres (`"HH:MM"`, passo de 30min por padrão).
   - `criar_agendamento { whatsapp, nome?, id_servico, id_profissional, data_hora_inicio }` — reaproveita ou cria o lead pelo whatsapp e insere o agendamento; conflito de horário e violação de escala continuam validados pelos triggers do banco (a função só traduz a mensagem de erro).
 - **Fuso horário:** a Edge Function roda em UTC, mas o negócio opera em `America/Sao_Paulo` (offset fixo `-03:00`, já que o Brasil não observa horário de verão desde 2019). Por isso toda data/hora sem timezone explícito recebida no `payload` (ex.: `"2026-08-28T10:00:00"`) é interpretada como horário de São Paulo, nunca como UTC — ver `instanteLocal()` no código da função. Ao montar o workflow no n8n, tanto enviar a hora "nua" (`2026-08-28T10:00:00`) quanto com o offset explícito (`2026-08-28T10:00:00-03:00`) funciona; enviar em UTC (`Z`) também funciona, mas representa um horário diferente do pretendido se a intenção era horário de Brasília.
-- A tela de Configurações → aba "API" ([src/pages/Configuracoes.tsx](src/pages/Configuracoes.tsx), hook `useApiTokens`) gera/ativa/desativa/exclui os tokens de `api_tokens` (token com prefixo `bhk_`, gerado no front-end com `crypto.randomUUID()`) e mostra a URL da função e a lista de ações para configurar o node HTTP Request do n8n. O token fica mascarado por padrão (ícone de olho para revelar, botão para copiar).
+- A URL da função é `${VITE_SUPABASE_URL}/functions/v1/agente`; use-a no node HTTP Request do n8n junto com um token gerado pelo SQL Editor (ver acima).
 - Para montar o workflow no n8n: um trigger de webhook recebe o evento da Evolution API (mensagem do WhatsApp), um node de IA (ex.: LLM com ferramentas) decide a ação e monta o `payload`, e um node HTTP Request chama a Edge Function com o token gerado nessa tela. A lógica de conversa em si (prompt, decisão do que perguntar, quando oferecer horário) fica inteiramente no workflow do n8n — fora deste repositório.
 
 ## Identidade visual
@@ -201,8 +213,11 @@ Os componentes em `src/components/ui/` seguem a convenção shadcn/ui, mas foram
 - **Etapa 9 — Integração do agente de IA:** criada a Edge Function `agente` (autenticada por token, gerencia `crm_barbearia` e `agendamentos` via `service_role`) e a gestão de tokens na aba "API" de Configurações.
 - **Etapa 10 — Auditoria de segurança (2026-08-28):** revisão completa de RLS, triggers, Edge Function, Storage e frontend, sem nenhuma alteração de código ou banco. Resultado: 1 risco **crítico** (self-signup habilitado no Supabase Auth — como toda política de RLS libera CRUD para qualquer usuário `authenticated`, qualquer pessoa pode se autocadastrar e obter acesso total aos dados) e 4 riscos **altos** (`logs_sistema` permite `UPDATE`/`DELETE` para qualquer autenticado, tokens de `api_tokens` guardados em texto plano, credencial de teste da Etapa 8/9 ainda ativa, token do agente sem escopo granular) — ver relatório completo entregue nesta etapa para a lista integral (inclui também riscos médios/baixos e os itens auditados sem problema).
 - **Etapa 11 — Deploy seguro para o GitHub (2026-08-28):** verificado que nenhum segredo estava hardcoded no código ou no CLAUDE.md, `.gitignore` reforçado (`.env`, `.env.local`, `.env.*.local`, `build` adicionados), primeiro commit criado e enviado para [github.com/MateusTorresRodrigues/projeto_crm_barbearia](https://github.com/MateusTorresRodrigues/projeto_crm_barbearia) (branch `main`). **Todas as 11 etapas planejadas do projeto foram concluídas com sucesso.**
+- **Etapa 12 — Comanda e Comissão temporariamente desativadas (2026-09-02):** a pedido do usuário, removidos do menu e das rotas (sem apagar código nem dados — ver nota em "Estrutura de páginas e rotas").
 
 ## Próximos passos
+
+- Reativar Comanda e Comissão quando o usuário pedir (ver nota em "Estrutura de páginas e rotas")
 
 Correções recomendadas pela auditoria de segurança (Etapa 10), da mais para a menos urgente:
 

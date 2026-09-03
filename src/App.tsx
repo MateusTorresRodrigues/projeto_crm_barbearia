@@ -4,8 +4,6 @@ import { AppLayout } from "@/components/layout/AppLayout"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import Agenda from "@/pages/Agenda"
 import Clientes from "@/pages/Clientes"
-import Comandas from "@/pages/Comandas"
-import Comissao from "@/pages/Comissao"
 import Configuracoes from "@/pages/Configuracoes"
 import Dashboard from "@/pages/Dashboard"
 import Leads from "@/pages/Leads"
@@ -29,9 +27,7 @@ export default function App() {
           <Route path="/profissionais" element={<Profissionais />} />
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/leads" element={<Leads />} />
-          <Route path="/comandas" element={<Comandas />} />
           <Route path="/servicos" element={<Servicos />} />
-          <Route path="/comissao" element={<Comissao />} />
           <Route path="/retorno" element={<Retorno />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/logs" element={<Logs />} />

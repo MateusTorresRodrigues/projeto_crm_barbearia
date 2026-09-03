@@ -1,12 +1,4 @@
-import {
-  CalendarCheck,
-  Columns3,
-  History,
-  Percent,
-  TrendingUp,
-  Wallet,
-  type LucideIcon,
-} from "lucide-react"
+import { CalendarCheck, Columns3, History, type LucideIcon } from "lucide-react"
 import * as React from "react"
 import { Link } from "react-router-dom"
 
@@ -14,22 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useConfiguracao } from "@/contexts/ConfiguracaoContext"
 import { useAgendamentos } from "@/hooks/useAgendamentos"
 import { useClientesInativos } from "@/hooks/useClientesInativos"
-import { useComissao } from "@/hooks/useComissao"
 import { useLeadsRealtime } from "@/hooks/useLeadsRealtime"
-import {
-  fimDoDia,
-  fimDoMes,
-  formatarHoraMinuto,
-  formatarMesAno,
-  inicioDoDia,
-  inicioDoMes,
-} from "@/lib/horarios"
+import { fimDoDia, formatarHoraMinuto, inicioDoDia } from "@/lib/horarios"
 import type { StatusAgendamento, StatusCrm } from "@/lib/types"
 import { cn } from "@/lib/utils"
-
-function formatarMoeda(valor: number) {
-  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-}
 
 const LABEL_STATUS_AGENDAMENTO: Record<StatusAgendamento, string> = {
   agendado: "Agendado",
@@ -82,23 +62,11 @@ export default function Dashboard() {
   const agora = React.useMemo(() => new Date(), [])
   const inicioHoje = React.useMemo(() => inicioDoDia(agora), [agora])
   const fimHoje = React.useMemo(() => fimDoDia(agora), [agora])
-  const inicioMes = React.useMemo(() => inicioDoMes(agora), [agora])
-  const fimMes = React.useMemo(() => fimDoMes(agora), [agora])
 
   const { agendamentos: agendamentosHoje, loading: carregandoAgendamentos } = useAgendamentos(
     inicioHoje,
     fimHoje
   )
-  const { grupos: gruposHoje, loading: carregandoComissaoHoje } = useComissao({
-    dataInicio: inicioHoje,
-    dataFim: fimHoje,
-    idProfissional: null,
-  })
-  const { grupos: gruposMes, totalGeral: comissaoMes, loading: carregandoComissaoMes } = useComissao({
-    dataInicio: inicioMes,
-    dataFim: fimMes,
-    idProfissional: null,
-  })
   const { leads, loading: carregandoLeads } = useLeadsRealtime()
   const { configuracao, loading: carregandoConfig } = useConfiguracao()
   const { itens: inativos, loading: carregandoInativos } = useClientesInativos(
@@ -106,16 +74,9 @@ export default function Dashboard() {
   )
 
   const loading =
-    carregandoAgendamentos ||
-    carregandoComissaoHoje ||
-    carregandoComissaoMes ||
-    carregandoLeads ||
-    carregandoConfig ||
-    carregandoInativos
+    carregandoAgendamentos || carregandoLeads || carregandoConfig || carregandoInativos
 
   const concluidosHoje = agendamentosHoje.filter((a) => a.status === "compareceu").length
-  const faturamentoHoje = gruposHoje.flatMap((g) => g.comandas).reduce((soma, c) => soma + c.valor_total, 0)
-  const faturamentoMes = gruposMes.flatMap((g) => g.comandas).reduce((soma, c) => soma + c.valor_total, 0)
   const leadsNovos = leads.filter((l) => l.tipo === "lead" && l.status === "novo").length
   const leadsEmAndamento = leads.filter(
     (l) => l.tipo === "lead" && STATUS_LEAD_EM_ANDAMENTO.includes(l.status)
@@ -131,7 +92,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <CartaoIndicador
           icone={CalendarCheck}
           titulo="Agendamentos hoje"
@@ -139,30 +100,6 @@ export default function Dashboard() {
           descricao={`${concluidosHoje} concluído(s)`}
           rota="/agenda"
         />
-        <CartaoIndicador
-          icone={Wallet}
-          titulo="Faturamento hoje"
-          valor={formatarMoeda(faturamentoHoje)}
-          descricao="Comandas fechadas hoje"
-          rota="/comandas"
-        />
-        <CartaoIndicador
-          icone={TrendingUp}
-          titulo="Faturamento do mês"
-          valor={formatarMoeda(faturamentoMes)}
-          descricao={formatarMesAno(agora)}
-          rota="/comissao"
-        />
-        <CartaoIndicador
-          icone={Percent}
-          titulo="Comissão do mês"
-          valor={formatarMoeda(comissaoMes)}
-          descricao="A pagar aos profissionais"
-          rota="/comissao"
-        />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
         <CartaoIndicador
           icone={Columns3}
           titulo="Leads novos"
