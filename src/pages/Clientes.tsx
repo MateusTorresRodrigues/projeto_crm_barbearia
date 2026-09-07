@@ -128,37 +128,59 @@ export default function Clientes() {
       )}
 
       {!loading && clientes.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-border bg-card">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Nome</th>
-                <th className="px-4 py-3 font-medium">WhatsApp</th>
-                <th className="px-4 py-3 font-medium">Barbeiro preferido</th>
-                <th className="px-4 py-3 font-medium">Última mensagem</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientes.map((c) => (
-                <tr
-                  key={c.id}
-                  onClick={() => abrirDetalhes(c)}
-                  onDoubleClick={() => abrirEdicaoDaLista(c)}
-                  className="cursor-pointer border-b border-border/60 last:border-b-0 hover:bg-secondary/50"
-                >
-                  <td className="px-4 py-3 font-medium text-foreground">{c.nome || "(sem nome)"}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{c.whatsapp}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {c.barbeiro_preferido_dados?.nome ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {formatarTempoRelativo(new Date(c.updated_at))}
-                  </td>
+        <>
+          {/* Lista em cards (mobile) */}
+          <div className="space-y-3 sm:hidden">
+            {clientes.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => abrirDetalhes(c)}
+                className="w-full rounded-lg border border-border bg-card p-4 text-left active:bg-secondary/50"
+              >
+                <p className="font-medium text-foreground">{c.nome || "(sem nome)"}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">{c.whatsapp}</p>
+                <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                  <span className="truncate">{c.barbeiro_preferido_dados?.nome ?? "—"}</span>
+                  <span className="shrink-0">{formatarTempoRelativo(new Date(c.updated_at))}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Tabela (tablet/desktop) */}
+          <div className="hidden overflow-x-auto rounded-lg border border-border bg-card sm:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="px-4 py-3 font-medium">Nome</th>
+                  <th className="px-4 py-3 font-medium">WhatsApp</th>
+                  <th className="px-4 py-3 font-medium">Barbeiro preferido</th>
+                  <th className="px-4 py-3 font-medium">Última mensagem</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {clientes.map((c) => (
+                  <tr
+                    key={c.id}
+                    onClick={() => abrirDetalhes(c)}
+                    onDoubleClick={() => abrirEdicaoDaLista(c)}
+                    className="cursor-pointer border-b border-border/60 last:border-b-0 hover:bg-secondary/50"
+                  >
+                    <td className="px-4 py-3 font-medium text-foreground">{c.nome || "(sem nome)"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{c.whatsapp}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {c.barbeiro_preferido_dados?.nome ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {formatarTempoRelativo(new Date(c.updated_at))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <ClienteFormDialog

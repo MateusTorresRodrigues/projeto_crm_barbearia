@@ -4,6 +4,7 @@ import * as React from "react"
 import { AgendamentoDetalhesDialog } from "@/components/agenda/AgendamentoDetalhesDialog"
 import { AgendamentoFormDialog } from "@/components/agenda/AgendamentoFormDialog"
 import { FiltroProfissionais } from "@/components/agenda/FiltroProfissionais"
+import { GradeDia } from "@/components/agenda/GradeDia"
 import { GradeMes } from "@/components/agenda/GradeMes"
 import { GradeSemana } from "@/components/agenda/GradeSemana"
 import { Button } from "@/components/ui/button"
@@ -14,8 +15,10 @@ import { useServicos } from "@/hooks/useServicos"
 import {
   adicionarDias,
   formatarDiaMes,
+  formatarDiaSemanaCurto,
   formatarMesAno,
   inicioDaSemana,
+  mesmodia,
   traduzErroAgendamento,
 } from "@/lib/horarios"
 import { registrarLog } from "@/lib/logs"
@@ -46,6 +49,16 @@ export default function Agenda() {
     const inicio = inicioDaSemana(dataReferencia)
     return Array.from({ length: 7 }, (_, i) => adicionarDias(inicio, i))
   }, [dataReferencia])
+
+  // Dia exibido na visão semanal em telas pequenas (evita o scroll horizontal dos 7 dias no celular).
+  const [diaMobile, setDiaMobile] = React.useState(semana[0])
+  React.useEffect(() => {
+    const hoje = new Date()
+    const diaAtualAindaNaSemana = semana.some((d) => mesmodia(d, diaMobile))
+    if (diaAtualAindaNaSemana) return
+    setDiaMobile(semana.find((d) => mesmodia(d, hoje)) ?? semana[0])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [semana])
 
   const rangeInicio = React.useMemo(() => {
     if (visao === "semana") return semana[0]
@@ -193,14 +206,61 @@ export default function Agenda() {
           )}
 
           {visao === "semana" ? (
-            <GradeSemana
-              semana={semana}
-              profissionaisVisiveis={profissionaisVisiveis}
-              agendamentos={agendamentosVisiveis}
-              onClickSlot={abrirCriacao}
-              onClickAgendamento={abrirDetalhes}
-              onReagendar={reagendar}
-            />
+            <>
+              {/* Tira de dias + grade de um dia só (mobile) */}
+              <div className="space-y-3 sm:hidden">
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  {semana.map((dia) => {
+                    const ehHoje = mesmodia(dia, new Date())
+                    const selecionado = mesmodia(dia, diaMobile)
+                    return (
+                      <button
+                        key={dia.toISOString()}
+                        type="button"
+                        onClick={() => setDiaMobile(dia)}
+                        className={cn(
+                          "flex shrink-0 flex-col items-center rounded-md border border-border px-2.5 py-1.5 text-xs transition-colors",
+                          selecionado
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <span>{formatarDiaSemanaCurto(dia)}</span>
+                        <span
+                          className={cn(
+                            "font-display font-semibold",
+                            !selecionado && ehHoje && "text-primary"
+                          )}
+                        >
+                          {dia.getDate()}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <GradeDia
+                  dia={diaMobile}
+                  profissionaisVisiveis={profissionaisVisiveis}
+                  agendamentos={agendamentosVisiveis}
+                  onClickSlot={abrirCriacao}
+                  onClickAgendamento={abrirDetalhes}
+                  onReagendar={reagendar}
+                />
+              </div>
+
+              {/* Semana completa (tablet/desktop) */}
+              <div className="hidden sm:block">
+                <GradeSemana
+                  semana={semana}
+                  profissionaisVisiveis={profissionaisVisiveis}
+                  agendamentos={agendamentosVisiveis}
+                  onClickSlot={abrirCriacao}
+                  onClickAgendamento={abrirDetalhes}
+                  onReagendar={reagendar}
+                />
+              </div>
+            </>
           ) : (
             <GradeMes
               mesReferencia={dataReferencia}

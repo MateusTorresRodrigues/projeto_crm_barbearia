@@ -61,44 +61,71 @@ export default function Retorno() {
       )}
 
       {!loading && filtrados.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-border bg-card">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Nome</th>
-                <th className="px-4 py-3 font-medium">WhatsApp</th>
-                <th className="px-4 py-3 font-medium">Barbeiro preferido</th>
-                <th className="px-4 py-3 font-medium">Última visita</th>
-                <th className="px-4 py-3 font-medium">Inativo há</th>
-                <th className="px-4 py-3 font-medium text-right">Ação</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtrados.map((i) => (
-                <tr key={i.cliente.id} className="border-b border-border/60 last:border-b-0 hover:bg-secondary/30">
-                  <td className="px-4 py-3 font-medium text-foreground">{i.cliente.nome || "(sem nome)"}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{i.cliente.whatsapp}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {i.cliente.barbeiro_preferido_dados?.nome ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{formatarDataCompleta(i.ultimaVisita)}</td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
-                      {i.diasInativo} dias
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button asChild variant="outline" size="sm">
-                      <a href={linkWhatsApp(i.cliente.whatsapp)} target="_blank" rel="noopener noreferrer">
-                        <MessageCircle className="size-4" /> WhatsApp
-                      </a>
-                    </Button>
-                  </td>
+        <>
+          {/* Lista em cards (mobile) */}
+          <div className="space-y-3 sm:hidden">
+            {filtrados.map((i) => (
+              <div key={i.cliente.id} className="rounded-lg border border-border bg-card p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-medium text-foreground">{i.cliente.nome || "(sem nome)"}</p>
+                  <span className="shrink-0 rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
+                    {i.diasInativo} dias
+                  </span>
+                </div>
+                <p className="mt-0.5 text-sm text-muted-foreground">{i.cliente.whatsapp}</p>
+                <div className="mt-2 text-xs text-muted-foreground">
+                  <p>{i.cliente.barbeiro_preferido_dados?.nome ?? "Sem barbeiro preferido"}</p>
+                  <p>Última visita: {formatarDataCompleta(i.ultimaVisita)}</p>
+                </div>
+                <Button asChild variant="outline" size="sm" className="mt-3 w-full">
+                  <a href={linkWhatsApp(i.cliente.whatsapp)} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="size-4" /> WhatsApp
+                  </a>
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          {/* Tabela (tablet/desktop) */}
+          <div className="hidden overflow-x-auto rounded-lg border border-border bg-card sm:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="px-4 py-3 font-medium">Nome</th>
+                  <th className="px-4 py-3 font-medium">WhatsApp</th>
+                  <th className="px-4 py-3 font-medium">Barbeiro preferido</th>
+                  <th className="px-4 py-3 font-medium">Última visita</th>
+                  <th className="px-4 py-3 font-medium">Inativo há</th>
+                  <th className="px-4 py-3 font-medium text-right">Ação</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtrados.map((i) => (
+                  <tr key={i.cliente.id} className="border-b border-border/60 last:border-b-0 hover:bg-secondary/30">
+                    <td className="px-4 py-3 font-medium text-foreground">{i.cliente.nome || "(sem nome)"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{i.cliente.whatsapp}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {i.cliente.barbeiro_preferido_dados?.nome ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{formatarDataCompleta(i.ultimaVisita)}</td>
+                    <td className="px-4 py-3">
+                      <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">
+                        {i.diasInativo} dias
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button asChild variant="outline" size="sm">
+                        <a href={linkWhatsApp(i.cliente.whatsapp)} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="size-4" /> WhatsApp
+                        </a>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   )

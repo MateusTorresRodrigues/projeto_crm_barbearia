@@ -48,18 +48,13 @@ export default function Leads() {
     setDetalhesAberto(true)
   }
 
-  function handleDragStartCard(e: React.DragEvent<HTMLButtonElement>, leadId: string) {
+  function handleDragStartCard(e: React.DragEvent<HTMLDivElement>, leadId: string) {
     arrastandoRef.current = leadId
     setEmArraste(true)
     e.dataTransfer.effectAllowed = "move"
   }
 
-  async function handleDropStatus(novoStatus: StatusCrm) {
-    setEmArraste(false)
-    const leadId = arrastandoRef.current
-    arrastandoRef.current = null
-    if (!leadId) return
-
+  async function moverLead(leadId: string, novoStatus: StatusCrm) {
     const lead = leads.find((l) => l.id === leadId)
     if (!lead || lead.status === novoStatus) return
 
@@ -81,6 +76,14 @@ export default function Leads() {
       dadosAnteriores: { status: statusAnterior },
       dadosNovos: { status: novoStatus },
     })
+  }
+
+  async function handleDropStatus(novoStatus: StatusCrm) {
+    setEmArraste(false)
+    const leadId = arrastandoRef.current
+    arrastandoRef.current = null
+    if (!leadId) return
+    await moverLead(leadId, novoStatus)
   }
 
   return (
@@ -126,7 +129,7 @@ export default function Leads() {
           Carregando leads...
         </div>
       ) : (
-        <div className="flex flex-1 gap-3 overflow-x-auto pb-2">
+        <div className="flex flex-1 snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
           {COLUNAS_STATUS_CRM.map((coluna) => (
             <KanbanColuna
               key={coluna.valor}
@@ -137,6 +140,7 @@ export default function Leads() {
               onClickLead={abrirDetalhes}
               onDragStartCard={handleDragStartCard}
               onDropStatus={handleDropStatus}
+              onMoverLead={moverLead}
             />
           ))}
         </div>

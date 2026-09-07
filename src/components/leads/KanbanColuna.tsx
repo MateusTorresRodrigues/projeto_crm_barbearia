@@ -12,14 +12,16 @@ export function KanbanColuna({
   onClickLead,
   onDragStartCard,
   onDropStatus,
+  onMoverLead,
 }: {
   status: StatusCrm
   label: string
   leads: CrmBarbearia[]
   emArraste: boolean
   onClickLead: (lead: CrmBarbearia) => void
-  onDragStartCard: (e: React.DragEvent<HTMLButtonElement>, leadId: string) => void
+  onDragStartCard: (e: React.DragEvent<HTMLDivElement>, leadId: string) => void
   onDropStatus: (status: StatusCrm) => void
+  onMoverLead: (leadId: string, novoStatus: StatusCrm) => void
 }) {
   const [emHover, setEmHover] = React.useState(false)
 
@@ -35,7 +37,7 @@ export function KanbanColuna({
         onDropStatus(status)
       }}
       className={cn(
-        "flex w-72 shrink-0 flex-col rounded-lg border border-border bg-secondary/20 transition-colors",
+        "flex w-[85vw] shrink-0 snap-start flex-col rounded-lg border border-border bg-secondary/20 transition-colors sm:w-72",
         emHover && "border-primary bg-primary/5"
       )}
     >
@@ -56,6 +58,7 @@ export function KanbanColuna({
             lead={lead}
             onClick={() => onClickLead(lead)}
             onDragStart={(e) => onDragStartCard(e, lead.id)}
+            onMoverPara={(novoStatus) => onMoverLead(lead.id, novoStatus)}
           />
         ))}
       </div>

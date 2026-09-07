@@ -103,56 +103,99 @@ export default function Servicos() {
       )}
 
       {!loading && filtrados.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-border bg-card">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-                <th className="px-4 py-3 font-medium">Nome</th>
-                <th className="px-4 py-3 font-medium">Duração</th>
-                <th className="px-4 py-3 font-medium">Preço</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtrados.map((s) => (
-                <tr key={s.id} className={cn("border-b border-border/60 last:border-b-0", !s.ativo && "opacity-60")}>
-                  <td className="px-4 py-3 font-medium text-foreground">{s.nome}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{s.duracao_minutos} min</td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {s.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={cn(
-                        "rounded-full px-2 py-0.5 text-xs font-medium",
-                        s.ativo ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"
-                      )}
-                    >
-                      {s.ativo ? "Ativo" : "Inativo"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => abrirEdicao(s)} aria-label="Editar serviço">
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => excluir(s)}
-                        aria-label="Excluir serviço"
-                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                  </td>
+        <>
+          {/* Lista em cards (mobile) */}
+          <div className="space-y-3 sm:hidden">
+            {filtrados.map((s) => (
+              <div
+                key={s.id}
+                className={cn("rounded-lg border border-border bg-card p-4", !s.ativo && "opacity-60")}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-medium text-foreground">{s.nome}</p>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
+                      s.ativo ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"
+                    )}
+                  >
+                    {s.ativo ? "Ativo" : "Inativo"}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {s.duracao_minutos} min ·{" "}
+                  {s.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </p>
+                <div className="mt-3 flex justify-end gap-1 border-t border-border/60 pt-2">
+                  <Button variant="ghost" size="icon" onClick={() => abrirEdicao(s)} aria-label="Editar serviço">
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => excluir(s)}
+                    aria-label="Excluir serviço"
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tabela (tablet/desktop) */}
+          <div className="hidden overflow-x-auto rounded-lg border border-border bg-card sm:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="px-4 py-3 font-medium">Nome</th>
+                  <th className="px-4 py-3 font-medium">Duração</th>
+                  <th className="px-4 py-3 font-medium">Preço</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium text-right">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtrados.map((s) => (
+                  <tr key={s.id} className={cn("border-b border-border/60 last:border-b-0", !s.ativo && "opacity-60")}>
+                    <td className="px-4 py-3 font-medium text-foreground">{s.nome}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{s.duracao_minutos} min</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {s.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-xs font-medium",
+                          s.ativo ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"
+                        )}
+                      >
+                        {s.ativo ? "Ativo" : "Inativo"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => abrirEdicao(s)} aria-label="Editar serviço">
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => excluir(s)}
+                          aria-label="Excluir serviço"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <ServicoFormDialog
