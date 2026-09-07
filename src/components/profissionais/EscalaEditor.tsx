@@ -38,16 +38,16 @@ export function EscalaEditor({
           <div
             key={dia.valor}
             className={cn(
-              "flex flex-wrap items-center gap-3 rounded-md border border-border bg-secondary/40 px-3 py-2",
+              "flex flex-col gap-2 rounded-md border border-border bg-secondary/40 px-3 py-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3",
               !linha.trabalha && "opacity-60"
             )}
           >
-            <label className="flex w-32 shrink-0 items-center gap-2 text-sm font-medium text-foreground">
+            <label className="flex items-center gap-2 text-sm font-medium text-foreground sm:w-32 sm:shrink-0">
               <input
                 type="checkbox"
                 checked={linha.trabalha}
                 onChange={(e) => atualizarDia(dia.valor, { trabalha: e.target.checked })}
-                className="size-4 rounded border-border bg-input accent-primary"
+                className="size-4 shrink-0 rounded border-border bg-input accent-primary"
               />
               {dia.label}
             </label>
@@ -58,15 +58,15 @@ export function EscalaEditor({
                 value={linha.horaInicio}
                 disabled={!linha.trabalha}
                 onChange={(e) => atualizarDia(dia.valor, { horaInicio: e.target.value })}
-                className="rounded-md border border-input bg-secondary/60 px-2 py-1 text-sm text-foreground disabled:opacity-50"
+                className="min-w-0 flex-1 rounded-md border border-input bg-secondary/60 px-2 py-1 text-sm text-foreground disabled:opacity-50 sm:flex-none"
               />
-              <span className="text-muted-foreground">até</span>
+              <span className="shrink-0 text-muted-foreground">até</span>
               <input
                 type="time"
                 value={linha.horaFim}
                 disabled={!linha.trabalha}
                 onChange={(e) => atualizarDia(dia.valor, { horaFim: e.target.value })}
-                className="rounded-md border border-input bg-secondary/60 px-2 py-1 text-sm text-foreground disabled:opacity-50"
+                className="min-w-0 flex-1 rounded-md border border-input bg-secondary/60 px-2 py-1 text-sm text-foreground disabled:opacity-50 sm:flex-none"
               />
             </div>
 
